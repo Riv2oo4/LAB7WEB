@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Data Display</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/prop-types@15/prop-types.js"></script>
+    
+    <style>
+        .container {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .post {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            background-color: #fff;
+        }
+        .post img {
+            margin-right: 10px;
+            border-radius: 5px;
+            width: 130px; 
+            height: 200px; 
+            object-fit: cover; 
+        }
+        .post-content {
+            flex: 1;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            font-family: "Trebuchet Ms", sans-serif; 
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        body{
+            background-image: url('ufc_cage.jpg');
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+
+    const Loading = () => <div>Loading...</div>;
+
+    const Post = ({ title, content, result, winner_image_url }) => (
+      <div className="post">
+        <img src={winner_image_url} alt="Imagen del ganador" />
+        <div className="post-content">
+          <h2>{title}</h2>
+          <p>Contenido: {content}</p>
+          <p>Resultado: {result}</p>
+        </div>
+      </div>
+    );
+
+    // PropTypes para el componente Post
+    Post.propTypes = {
+      title: PropTypes.string.isRequired,
+      content: PropTypes.string.isRequired,
+      result: PropTypes.string.isRequired,
+      winner_image_url: PropTypes.string.isRequired,
+    };
+
+    const fetchData = async () => {
+      const response = await fetch('http://localhost:3000/posts');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    };
+
+    const App = () => {
+      const [posts, setPosts] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [error, setError] = React.useState(null);
+
+      React.useEffect(() => {
+        const fetchPosts = async () => {
+          const data = await fetchData();
+          setPosts(data);
+          setLoading(false);
+        };
+
+        (async () => {
+          await fetchPosts();
+        })().catch(error => {
+          setError(error.message);
+          setLoading(false);
+        });
+      }, []);
+
+      if (loading) return <Loading />;
+      if (error) return <div>Error: {error}</div>;
+
+      return (
+        <div className="container">
+          <h1 className="header">UFC Blog Hugo</h1>
+          <div className="button-container">
+            <button className="button">Crear Blog</button>
+            <button className="button">Editar Blog</button>
+            <button className="button">Eliminar Blog</button>
+            <button className="button">Leer Blog</button>
+          </div>
+          {posts.length === 0 ? (
+            <div>No hay publicaciones disponibles</div>
+          ) : (
+            posts.map(post => <Post key={post.id} {...post} />)
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+    </script>
+</body>
+</html>
