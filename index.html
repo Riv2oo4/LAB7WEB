@@ -65,6 +65,14 @@
             animation: spin 2s linear infinite;
             margin: 0 auto;
         }
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            color: #333;
+        }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
@@ -111,12 +119,13 @@
     };
 
     const fetchData = async () => {
-      const response = await fetch('http://localhost:3000/posts');
-      if (!response.ok) {
-        throw new Error('No hay una buena conexión');
-      }
-      return response.json();
-    };
+        const response = await fetch('http://localhost:3000/posts');
+        if (!response.ok) {
+          throw new Error('No hay una buena conexión');
+        }
+        return response.json();
+      };
+      
 
     const App = () => {
       const [posts, setPosts] = React.useState([]);
@@ -155,7 +164,7 @@
             ) : error ? (
               <div>Error: {error}</div>
             ) : posts.length === 0 ? (
-              <div>No hay publicaciones disponibles</div>
+              <div className = "empty-state">No hay publicaciones disponibles</div>
             ) : (
               posts.map(post => <Post key={post.id} {...post} />)
             )}
