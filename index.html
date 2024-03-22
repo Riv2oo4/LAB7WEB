@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>API Data Display</title>
+    <title>Blog UFC</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/prop-types@15/prop-types.js"></script>
+    <script src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
     
     <style>
         .container {
@@ -55,6 +55,21 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        
+        .loading-animation {
+            border: 8px solid white; 
+            border-top: 8px solid #3498db; 
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         body{
             background-image: url('ufc_cage.jpg');
@@ -66,7 +81,17 @@
     <div id="root"></div>
     <script type="text/babel">
 
-    const Loading = () => <div>Loading...</div>;
+    const LoadingAnimation = () => (
+      <div className="loading-animation"></div>
+    );
+
+    const Header = () => (
+      <h1 className="header">UFC Blog Hugo</h1>
+    );
+
+    const Button = ({ text }) => (
+      <button className="button">{text}</button>
+    );
 
     const Post = ({ title, content, result, winner_image_url }) => (
       <div className="post">
@@ -78,8 +103,6 @@
         </div>
       </div>
     );
-
-    // PropTypes para el componente Post
     Post.propTypes = {
       title: PropTypes.string.isRequired,
       content: PropTypes.string.isRequired,
@@ -90,7 +113,7 @@
     const fetchData = async () => {
       const response = await fetch('http://localhost:3000/posts');
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('No hay una buena conexión');
       }
       return response.json();
     };
@@ -114,24 +137,26 @@
           setLoading(false);
         });
       }, []);
-
-      if (loading) return <Loading />;
-      if (error) return <div>Error: {error}</div>;
-
       return (
         <div className="container">
-          <h1 className="header">UFC Blog Hugo</h1>
-          <div className="button-container">
-            <button className="button">Crear Blog</button>
-            <button className="button">Editar Blog</button>
-            <button className="button">Eliminar Blog</button>
-            <button className="button">Leer Blog</button>
-          </div>
-          {posts.length === 0 ? (
-            <div>No hay publicaciones disponibles</div>
-          ) : (
-            posts.map(post => <Post key={post.id} {...post} />)
-          )}
+          <React.Suspense fallback={<LoadingAnimation />}>
+            <Header />
+            <div className="button-container">
+              <Button text="Crear Blog" />
+              <Button text="Editar Blog" />
+              <Button text="Eliminar Blog" />
+              <Button text="Leer Blog" />
+            </div>
+            {loading ? (
+              <LoadingAnimation />
+            ) : error ? (
+              <div>Error: {error}</div>
+            ) : posts.length === 0 ? (
+              <div>No hay publicaciones disponibles</div>
+            ) : (
+              posts.map(post => <Post key={post.id} {...post} />)
+            )}
+          </React.Suspense>
         </div>
       );
     };
